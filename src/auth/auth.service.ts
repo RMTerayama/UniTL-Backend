@@ -25,12 +25,7 @@ export class AuthService {
             throw new UnauthorizedException('Senha não encontrada no banco');
         }
 
-        // Ajusta o hash do PHP ($2y$ -> $2b$) apenas se necessário
-        const hashAjustado = user.senha_hash.startsWith("$2y$")
-            ? user.senha_hash.replace(/^\$2y\$/, "$2b$")
-            : user.senha_hash;
-
-        const isPasswordValid = await bcrypt.compare(password, hashAjustado);
+        const isPasswordValid = await bcrypt.compare(password, user.senha_hash);
 
 
         if (!isPasswordValid) {

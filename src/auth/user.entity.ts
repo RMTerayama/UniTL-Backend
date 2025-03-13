@@ -1,22 +1,35 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity({ name: 'users' }) // Certifica-se de que a tabela se chama 'users'
+export enum UserRole {
+  ADMIN = 'admin',
+  COORDENADOR = 'coordenador',
+  PADRAO = 'padrao',
+}
+
+@Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
-  id_user: number; // Nome exato da coluna no banco
+  id_user: number;
+
+  @Column({ length: 255 })
+  nome: string; // Nova coluna adicionada
+
+  @Column()
+  departamento_id: number;
 
   @Column({ unique: true })
-  usuario: string; // Alterado para "usuario" ao invés de "email"
+  usuario: string;
 
-  @Column({ unique: true, nullable: true }) 
-  email: string; // Adicionado email para precaução futura
-
-  @Column()
-  senha_hash: string; // Deve estar exatamente como no banco
+  @Column({ unique: true, nullable: true })
+  email: string;
 
   @Column()
-  role: string; // Se a coluna role existir no banco
+  senha_hash: string;
 
-  @Column({ nullable: true })
-  departamento_id: number;
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.PADRAO,
+  })
+  role: UserRole;
 }
