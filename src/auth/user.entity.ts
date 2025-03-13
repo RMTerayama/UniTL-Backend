@@ -12,7 +12,7 @@ export class User {
   id_user: number;
 
   @Column({ length: 255 })
-  nome: string; // Nova coluna adicionada
+  nome: string; 
 
   @Column()
   departamento_id: number;
@@ -20,8 +20,9 @@ export class User {
   @Column({ unique: true })
   usuario: string;
 
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true }) // Agora o email será obrigatório
   email: string;
+
 
   @Column()
   senha_hash: string;
