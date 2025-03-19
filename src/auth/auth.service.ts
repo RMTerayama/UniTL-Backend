@@ -13,42 +13,51 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-    async validateUser(usuario: string, password: string): Promise<User | null> {
-        const user = await this.userRepository.findOne({ where: { usuario } });
+  async validateUser(usuario: string, password: string): Promise<User | null> {
+    const user = await this.userRepository.findOne({ where: { usuario } });
 
-        if (!user) {
-            throw new UnauthorizedException('Usuário não encontrado');
-        }
-
-        // Verifica se a senha está definida no banco antes de tentar alterar o hash
-        if (!user.senha_hash) {
-            throw new UnauthorizedException('Senha não encontrada no banco');
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.senha_hash);
-
-
-        if (!isPasswordValid) {
-            throw new UnauthorizedException('Senha incorreta');
-        }
-
-        return user;
-    }
-
-
-
-
-  async login(loginDto: LoginDto): Promise<{ access_token: string }> {
-    const user = await this.validateUser(loginDto.usuario, loginDto.password);
-  
     if (!user) {
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw new UnauthorizedException('Usuário não encontrado');
     }
-  
-    const payload = { sub: user.id_user, usuario: user.usuario, role: user.role };
-    const access_token = this.jwtService.sign(payload);
-  
-    return { access_token };
+
+    if (!user.senha_hash) {
+      throw new UnauthorizedException('Senha não encontrada no banco');
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.senha_hash);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Senha incorreta');
+    }
+
+    return user;
   }
-  
+
+    async login(loginDto: LoginDto): Promise<{ access_token: string }> {
+      const user = await this.validateUser(loginDto.usuario, loginDto.password);
+
+      console.log('DEBUG NestJS - SECRET usada:', process.env.JWT_SECRET);
+      console.log('DEBUG NestJS - Secret length:', process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0);
+
+      if (!user) {
+        throw new UnauthorizedException('Credenciais inválidas');
+      }
+
+      // 🔹 Agora o payload do UniTL segue exatamente o formato do SIGEM
+      const payload = {
+        iss: "localhost",
+        sub: user.id_user,
+        usuario: user.usuario,
+        name: user.nome, // 🔹 Alterado de 'nome' para 'name' para ficar igual ao SIGEM
+        role: user.role,
+        departamento_id: user.departamento_id
+      };
+
+      const access_token = this.jwtService.sign(payload);
+
+      console.log('DEBUG NestJS - Token gerado:', access_token);
+
+      return { access_token };
+    } 
+
 }
